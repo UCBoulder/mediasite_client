@@ -1,0 +1,6 @@
+{
+"base_url":"https://<your domain>/mediasite/Api/v1/",
+"api_secret":"<your secret>",
+"api_user":"<your api users>",
+"api_pass":"<your api pass>"
+}
