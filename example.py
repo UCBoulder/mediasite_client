@@ -48,7 +48,7 @@ if __name__ == "__main__":
     logging.getLogger().addHandler(console)
 
     #open config file with configuration info
-    config_file = open(run_path+"/config/prod_config.json")
+    config_file = open(run_path+"/config/config.json")
     config_data = json.load(config_file)
 
     #creating the mediasite controller
