@@ -14,9 +14,37 @@ class presentation():
     def __init__(self, mediasite, *args, **kwargs):
         self.mediasite = mediasite
 
+    def get_all_presentations(self):
+        """
+        Gathers a listing of all presentations.
+
+        returns:
+            resulting response from the mediasite web api request
+        """
+        logging.info("Getting a list of all presentations")
+
+        #request mediasite folder information on the "Mediasite Users" folder
+
+        count = 0
+        current = 0
+        increment = 1000
+        maximum = 1000
+        result_list = []
+
+        while current < maximum:
+            result = self.mediasite.api_client.request("get", "Presentations", "$filter=Status eq 'Unavailable'&$skip="+str(increment*count)+"&$top="+str(increment)+"","")
+            result_json = result.json()
+            #print(result_json)
+            maximum = int(result_json["odata.count"])
+            current = increment*count
+            result_list += result_json["value"]
+            count += 1
+
+        return result_list
+
     def get_presentations_by_name(self, name_search_query):
         """
-        Gathers mediasite root folder ID for use with other functions.
+        Gets presentations by name using provided name_search_querys
         
         params:
             template_name: name of the template to be found within mediasite

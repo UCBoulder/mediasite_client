@@ -54,10 +54,10 @@ class controller():
             Configured Mediasite web api client object
         """
 
-        return api_client.client(config_data["base_url"],
-                                        config_data["api_secret"],
-                                        config_data["api_user"],
-                                        config_data["api_pass"]
+        return api_client.client(config_data["mediasite_base_url"],
+                                        config_data["mediasite_api_secret"],
+                                        config_data["mediasite_api_user"],
+                                        config_data["mediasite_api_pass"]
                                         )
 
     def connection_validated(self):
@@ -132,62 +132,69 @@ class controller():
                 else:
                     return job_result
 
-        def process_scheduling_data_row(self, schedule_data):
-            """
-            Process scheduling data provided in pre-specified format.
+    def process_scheduling_data_row(self, schedule_data):
+        """
+        Process scheduling data provided in pre-specified format.
 
-            params:
-                schedule_data: list which contain pertinent mediasite scheduling data
+        params:
+            schedule_data: list which contain pertinent mediasite scheduling data
 
-            returns:
-                output indicating which rows of scheduling information were successfully scheduled
-            """
+        returns:
+            output indicating which rows of scheduling information were successfully scheduled
+        """
 
-            row_result = {}
+        row_result = {}
 
-            validation_result = self.schedule.validate_scheduling_data(schedule_data)
+        validation_result = self.validate_scheduling_data(schedule_data)
 
-            #validate the scheduling data
-            if "error" in validation_result.keys():
-                row_result["error"] = validation_result["error"]
-                return row_result
-
-            #parse and create folders
-            parent_folder_id = self.folder.parse_and_create_folders(schedule_data["folders"], schedule_data["folder_root_id"])
-            
-            #set the current schedule data parent folder id
-            schedule_data["schedule_parent_folder_id"] = parent_folder_id
-
-            #parse and create module
-            if schedule_data["module_include"]:
-                module_result = self.module.create_module(schedule_data["module_name"], schedule_data["module_id"])
-                row_result["module_result"] = module_result
-
-            #parse and create catalog
-            if schedule_data["catalog_include"]:
-                catalog_result = self.catalog.create_catalog(schedule_data["catalog_name"], schedule_data["catalog_description"], schedule_data["schedule_parent_folder_id"])
-                row_result["catalog_result"] = catalog_result
-
-            #enable catalog downloads
-            if schedule_data["catalog_include"] and schedule_data["catalog_enable_download"]:
-                self.catalog.enable_catalog_downloads(catalog_result["Id"])
-
-            #disable catalog links
-            if schedule_data["catalog_include"] and not schedule_data["catalog_allow_links"]:
-                self.catalog.disable_catalog_allow_links(catalog_result["Id"])
-
-            #link module to catalog
-            if schedule_data["module_include"] and schedule_data["catalog_include"]:
-                self.catalog.add_module_to_catalog(catalog_result["Id"], module_result["Id"])
-
-            schedule_result = self.schedle.create_schedule(schedule_data)
-            row_result["schedule_result"] = schedule_result
-
-            if "odata.error" not in schedule_result:
-                recurrence_result = self.schedule.create_recurrence(schedule_data, schedule_result)
-                row_result["recurrence_result"] = recurrence_result
-
+        #validate the scheduling data
+        if "error" in validation_result.keys():
+            row_result["error"] = validation_result["error"]
             return row_result
+
+        #parse and create folders
+        parent_folder_id = self.folder.parse_and_create_folders(schedule_data["mediasite_folders"], schedule_data["mediasite_folder_root_id"])
+        
+        #set the current schedule data parent folder id
+        schedule_data["schedule_parent_folder_id"] = parent_folder_id
+
+        #parse and create module
+        if schedule_data["module_include"]:
+            module_result = self.module.create_module(schedule_data["module_name"], schedule_data["module_id"])
+            row_result["module_result"] = module_result
+
+        #parse and create catalog
+        if schedule_data["catalog_include"]:
+            catalog_result = self.catalog.create_catalog(schedule_data["catalog_name"], schedule_data["catalog_description"], schedule_data["schedule_parent_folder_id"])
+            row_result["catalog_result"] = catalog_result
+
+        #parse and create catalog analytics report
+        if schedule_data["catalog_include"]:
+            analytics_report_result = self.report.create_catalog_report(schedule_data["catalog_name"], catalog_result["Id"])
+            row_result["analytics_result"] = analytics_report_result
+
+        #enable catalog downloads
+        if schedule_data["catalog_include"] and schedule_data["catalog_enable_download"]:
+            self.catalog.enable_catalog_downloads(catalog_result["Id"])
+
+        #disable catalog links
+        if schedule_data["catalog_include"] and not schedule_data["catalog_allow_links"]:
+            self.catalog.disable_catalog_allow_links(catalog_result["Id"])
+
+        #link module to catalog
+        if schedule_data["module_include"] and schedule_data["catalog_include"]:
+            self.catalog.add_module_to_catalog(catalog_result["Id"], module_result["Id"])
+
+        schedule_result = self.schedule.create_schedule(schedule_data)
+        row_result["schedule_result"] = schedule_result
+
+        row_result["schedule_result"]["folder_directory"] = schedule_data["mediasite_folders"]
+
+        if "odata.error" not in schedule_result:
+            recurrence_result = self.schedule.create_recurrence(schedule_data, schedule_result)
+            row_result["recurrence_result"] = recurrence_result
+
+        return row_result
 
     def validate_scheduling_data(self, schedule_data):
         """

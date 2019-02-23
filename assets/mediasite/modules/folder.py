@@ -13,7 +13,7 @@ from urllib.parse import quote
 class folder():
     def __init__(self, mediasite, *args, **kwargs):
         self.mediasite = mediasite
-        self.gather_root_folder_id()
+        #self.gather_root_folder_id()
 
     def gather_folders(self, parent_id=""):
         """
@@ -307,6 +307,27 @@ class folder():
         logging.info("Finding Mediasite folder information with name of: "+folder_name)
 
         result = self.mediasite.api_client.request("get", "Folders", "$filter=Name eq '"+folder_name+"' and Recycled eq false","").json()
+        
+        if self.mediasite.experienced_request_errors(result):
+            return result
+
+        else:
+            return result
+
+    def get_folder_by_id(self, folder_id):
+        """
+        Gathers folder information given folder name within mediasite
+        
+        params:
+            folder_name: name of folder which is to be found by name
+
+        returns:
+            the parent ID of the mediasite "Mediasite Users" folder
+        """
+
+        logging.info("Finding Mediasite folder information with id of: "+folder_id)
+
+        result = self.mediasite.api_client.request("get", "Folders('"+folder_id+"')", "", "","").json()
         
         if self.mediasite.experienced_request_errors(result):
             return result

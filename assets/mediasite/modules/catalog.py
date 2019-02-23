@@ -51,14 +51,25 @@ class catalog():
 
         logging.info("Gathering all catalogs.")
 
-        result = self.mediasite.api_client.request("get", "Catalogs", "$top=800","")
-        result_json = result.json()
+        catalogs = []
+        size = 100
+        total = 1
+        skip = 0
+
+        while total > skip:
+
+            result = self.mediasite.api_client.request("get", "Catalogs", "$top="+str(size)+"&$skip="+str(skip),"")
+            result_json = result.json()
+            catalogs.extend(result_json["value"])
+            total = int(result_json["odata.count"])
+            skip += size
+
         self.mediasite.model.set_catalogs(result_json["value"])
 
         if self.mediasite.experienced_request_errors(result):
             return result
         else:
-            return result_json
+            return catalogs
 
     def enable_catalog_downloads(self, catalog_id):
         """
@@ -137,7 +148,7 @@ class catalog():
         else:
             return result
 
-    def create_catalog(self, catalog_name, description, parent_id):
+    def create_catalog(self, catalog_name, description="", parent_id=None):
         """
         Creates mediasite catalog using provided catalog name, description, and parent folder id
 
@@ -150,12 +161,15 @@ class catalog():
             resulting response from the mediasite web api request
         """
 
-        logging.info("Creating catalog '"+catalog_name+"' under parent folder "+parent_id)
+        logging.info("Creating catalog '"+catalog_name+"' under parent folder "+str(parent_id))
     
         post_data = {"Name":catalog_name,
                     "Description":description,
-                    "LinkedFolderId":parent_id
+                    "LimitSearchToCatalog":True
                     }
+
+        if parent_id:
+            post_data["LinkedFolderId"] = parent_id
 
         result = self.mediasite.api_client.request("post", "Catalogs", "", post_data).json()
         

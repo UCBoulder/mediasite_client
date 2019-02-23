@@ -31,7 +31,7 @@ class module():
                     "ModuleId":module_id
                     }
 
-        result = self.controller.api_client.do_request("post", "Modules", "", post_data).json()
+        result = self.controller.api_client.request("post", "Modules", "", post_data).json()
 
         if self.controller.experienced_request_errors(result):
             return result
@@ -51,7 +51,7 @@ class module():
         returns:
             true if it already exists, false if it does not
         """
-        result = self.controller.api_client.do_request("get", "Modules", "$filter=ModuleId eq '"+module_id+"'", "").json()
+        result = self.controller.api_client.request("get", "Modules", "$filter=ModuleId eq '"+module_id+"'", "").json()
 
         if self.controller.experienced_request_errors(result):
             return result

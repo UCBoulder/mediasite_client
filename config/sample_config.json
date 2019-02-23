@@ -1,6 +1,6 @@
 {
-"base_url":"https://<your domain>/mediasite/Api/v1/",
-"api_secret":"<your secret>",
-"api_user":"<your api users>",
-"api_pass":"<your api pass>"
+"mediasite_base_url":"https://<your domain>/mediasite/Api/v1/",
+"mediasite_api_secret":"<your secret>",
+"mediasite_api_user":"<your api users>",
+"mediasite_api_pass":"<your api pass>"
 }

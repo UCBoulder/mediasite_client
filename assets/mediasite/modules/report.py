@@ -479,3 +479,34 @@ class report():
                 logging.error(result["odata.error"]["code"]+": "+result["odata.error"]["message"]["value"])
 
             return result
+
+    def create_catalog_report(self, report_name, catalog_id):
+        """
+        Create a Mediasite catalog report to analyze presentations in given catalog by id
+
+        params:
+            report_name: name of presentation report
+            catalog_id: Mediasite guid of the catalog which will be associated with catalog report
+
+        returns:
+            result from mediasite api request to create catalog report
+        """       
+
+        logging.info("Creating catalog report "+report_name+" for catalog "+catalog_id)
+
+        post_data = {"Name":report_name,
+                    "CatalogIdList":[catalog_id],
+                    "IncludeItemsWithZeroViews":True
+                    }
+
+        #make the mediasite request using the post data found above to create the folder
+        result = self.mediasite.api_client.request("post", "CatalogReports", "", post_data).json()
+
+        if self.mediasite.experienced_request_errors(result):
+            return result
+        else:
+            #if there is an error, log it
+            if "odata.error" in result:
+                logging.error(result["odata.error"]["code"]+": "+result["odata.error"]["message"]["value"])
+
+            return result

@@ -7,7 +7,7 @@ By: Dave Bunten
 License: MIT - see license.txt
 """
 
-
+import os
 import logging
 import time
 import datetime
@@ -191,12 +191,14 @@ class schedule():
 
         #check that we have days of the week specified - dateutil returns all dates if none are specified (unwanted in this case)
         if days_of_week == "":
-            return []
-
-        rule = rrule.rrule(dtstart = schedule_data["schedule_start_datetime_local"], 
-                            freq = rrule.DAILY,
-                            byweekday = self.to_dateutil_weekdays(days_of_week)
-                            )
+            rule = rrule.rrule(dtstart = schedule_data["schedule_start_datetime_local"], 
+                    freq = rrule.DAILY
+                    )
+        else:
+            rule = rrule.rrule(dtstart = schedule_data["schedule_start_datetime_local"], 
+                                freq = rrule.DAILY,
+                                byweekday = self.to_dateutil_weekdays(days_of_week)
+                                )
 
         datelist = rule.between(schedule_data["schedule_start_datetime_local"],
                                 schedule_data["schedule_end_datetime_local"],
@@ -358,7 +360,7 @@ class schedule():
             schedule_data = self.gather_import_schedule_data(row)
 
             #perform mediasite-specific work using schedule_data for row
-            row_result = self.process_scheduling_data_row(schedule_data)
+            row_result = self.mediasite.process_scheduling_data_row(schedule_data)
 
             #append results to the overall list
             result_list.append(row_result)
